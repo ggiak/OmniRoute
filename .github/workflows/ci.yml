@@ -38,6 +38,8 @@ jobs:
       - run: npm run check:route-validation:t06
       - run: npm run check:any-budget:t11
       - run: npm run check:provider-consistency
+      - run: npm run check:fetch-targets
+      - run: npm run check:deps
       - run: npm run check:docs-sync
       - run: npm run typecheck:core
       # typecheck:noimplicit:core is a forward-looking gate (noImplicitAny).
@@ -93,6 +95,8 @@ jobs:
         run: npm run check:openapi-coverage
       - name: OpenAPI security-tier consistency (advisory)
         run: npm run check:openapi-security-tiers
+      - name: OpenAPI spec paths resolve to real routes (anti-hallucination)
+        run: npm run check:openapi-routes
       - name: i18n translation drift (warn)
         run: node scripts/i18n/check-translation-drift.mjs --warn
 
