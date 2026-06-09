@@ -265,6 +265,12 @@ export function cloakThirdPartyToolNames(
   // not corrupt an input body that may be logged or replayed on fallback).
   if (Array.isArray(tools)) {
     body.tools = tools.map((tool) => {
+      // Anthropic versioned built-in tools (e.g. advisor_20260301, bash_20250124,
+      // computer_20250124) require their `name` field to match the type prefix
+      // exactly. Never cloak these — the API rejects any mutation.
+      if (tool && typeof tool.type === "string" && /^[a-z][a-z0-9_]*_\d{8}$/.test(tool.type)) {
+        return tool;
+      }
       if (tool && typeof tool.name === "string" && shouldCloak(tool.name)) {
         return { ...tool, name: aliasFor(tool.name) };
       }

@@ -748,6 +748,18 @@ function buildClaudeCodeCompatibleToolsFromClaude(
     if (!preserveCacheControl) {
       delete preparedTool.cache_control;
     }
+    // Versioned built-in tools (advisor_20260301, bash_20250124, etc.) carry a
+    // `model` field that the client may set to an OmniRoute-prefixed ID like
+    // "cc/claude-opus-4-8". Anthropic rejects the prefix — strip it to the
+    // bare upstream model ID.
+    if (
+      typeof preparedTool.type === "string" &&
+      /^[a-z][a-z0-9_]*_\d{8}$/.test(preparedTool.type) &&
+      typeof preparedTool.model === "string" &&
+      preparedTool.model.includes("/")
+    ) {
+      preparedTool.model = preparedTool.model.split("/").pop();
+    }
     return preparedTool;
   });
 }
@@ -776,6 +788,19 @@ function convertClaudeCodeCompatibleTool(tool: unknown) {
 
   if (typeof toolData.defer_loading === "boolean") {
     converted.defer_loading = toolData.defer_loading;
+  }
+
+  // Versioned built-in tools (advisor_20260301, bash_20250124, etc.) must have
+  // their `type` and `model` fields forwarded to Anthropic. The `model` field
+  // may carry an OmniRoute provider prefix (cc/, claude/) — strip it to the
+  // bare upstream ID.
+  if (typeof rawTool.type === "string" && /^[a-z][a-z0-9_]*_\d{8}$/.test(rawTool.type)) {
+    converted.type = rawTool.type;
+    if (typeof toolData.model === "string") {
+      converted.model = toolData.model.includes("/")
+        ? toolData.model.split("/").pop()
+        : toolData.model;
+    }
   }
 
   return converted;

@@ -419,3 +419,62 @@ test("buildClaudeCodeCompatibleRequest covers string system input, non-array Cla
   assert.equal(stringSystem.tools.length, 0);
   assert.equal(stringSystem.system.at(-1).text, "custom system");
 });
+
+test("buildClaudeCodeCompatibleRequest strips OmniRoute prefix from versioned built-in tool model field (normalizedBody path)", () => {
+  const payload = buildClaudeCodeCompatibleRequest({
+    normalizedBody: {
+      messages: [{ role: "user", content: "hello" }],
+      tools: [
+        { type: "advisor_20260301", name: "advisor", model: "cc/claude-opus-4-8" },
+        { type: "bash_20250124", name: "bash", model: "claude/claude-sonnet-4-6" },
+        { name: "my_tool", input_schema: { type: "object", properties: {} } },
+      ],
+    },
+    model: "claude-opus-4-8",
+    cwd: "/tmp",
+    now: new Date("2026-01-02T12:00:00.000Z"),
+  });
+
+  const tools = payload.tools as Array<Record<string, unknown>>;
+  const advisor = tools.find((t) => t.type === "advisor_20260301");
+  const bash = tools.find((t) => t.type === "bash_20250124");
+  const myTool = tools.find((t) => t.name === "my_tool");
+
+  assert.equal(advisor?.model, "claude-opus-4-8", "advisor model prefix stripped");
+  assert.equal(bash?.model, "claude-sonnet-4-6", "bash model prefix stripped");
+  assert.equal("model" in (myTool ?? {}), false, "regular tool has no model field");
+});
+
+test("buildClaudeCodeCompatibleRequest strips OmniRoute prefix from versioned built-in tool model field (claudeBody path)", () => {
+  const payload = buildClaudeCodeCompatibleRequest({
+    claudeBody: {
+      messages: [{ role: "user", content: [{ type: "text", text: "hello" }] }],
+      tools: [
+        { type: "advisor_20260301", name: "advisor", model: "cc/claude-opus-4-8" },
+        { name: "Read", input_schema: { type: "object", properties: {} } },
+      ],
+    },
+    model: "claude-opus-4-8",
+    cwd: "/tmp",
+    now: new Date("2026-01-02T12:00:00.000Z"),
+  });
+
+  const tools = payload.tools as Array<Record<string, unknown>>;
+  const advisor = tools.find((t) => t.type === "advisor_20260301");
+  assert.equal(advisor?.model, "claude-opus-4-8", "advisor model prefix stripped via claudeBody path");
+});
+
+test("buildClaudeCodeCompatibleRequest preserves bare model on versioned built-in tool (no prefix)", () => {
+  const payload = buildClaudeCodeCompatibleRequest({
+    normalizedBody: {
+      messages: [{ role: "user", content: "hello" }],
+      tools: [{ type: "advisor_20260301", name: "advisor", model: "claude-opus-4-8" }],
+    },
+    model: "claude-opus-4-8",
+    cwd: "/tmp",
+    now: new Date("2026-01-02T12:00:00.000Z"),
+  });
+
+  const tools = payload.tools as Array<Record<string, unknown>>;
+  assert.equal(tools[0]?.model, "claude-opus-4-8", "bare model preserved unchanged");
+});
