@@ -18,8 +18,9 @@ function run(baseline: unknown, metrics: unknown, extraArgs: string[] = []) {
       encoding: "utf8",
     });
     return { code: 0, out, dir, bPath };
-  } catch (e: any) {
-    return { code: e.status as number, out: (e.stdout || "") + (e.stderr || ""), dir, bPath };
+  } catch (e) {
+    const err = e as { status?: number; stdout?: string; stderr?: string };
+    return { code: err.status as number, out: (err.stdout || "") + (err.stderr || ""), dir, bPath };
   }
 }
 

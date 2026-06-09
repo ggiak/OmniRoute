@@ -112,6 +112,7 @@
     "check:cli-i18n": "node scripts/check/check-cli-i18n.mjs",
     "check:openapi-coverage": "node scripts/check/check-openapi-coverage.mjs",
     "check:openapi-security-tiers": "node scripts/check/check-openapi-security-tiers.mjs",
+    "check:provider-consistency": "node --import tsx scripts/check/check-provider-consistency.ts",
     "quality:collect": "node scripts/quality/collect-metrics.mjs",
     "quality:ratchet": "node scripts/quality/check-quality-ratchet.mjs",
     "quality:gate": "npm run quality:collect && npm run quality:ratchet",

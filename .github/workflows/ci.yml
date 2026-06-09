@@ -37,6 +37,7 @@ jobs:
       - run: npm run check:cycles
       - run: npm run check:route-validation:t06
       - run: npm run check:any-budget:t11
+      - run: npm run check:provider-consistency
       - run: npm run check:docs-sync
       - run: npm run typecheck:core
       # typecheck:noimplicit:core is a forward-looking gate (noImplicitAny).
@@ -44,6 +45,33 @@ jobs:
       # explicit annotations; track in a dedicated follow-up.
       - run: npm run typecheck:noimplicit:core
         continue-on-error: true
+
+  quality-gate:
+    name: Quality Ratchet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run quality:collect
+      # Catraca: falha se qualquer métrica regredir vs quality-baseline.json (commitado).
+      # Hoje: contagem de warnings do ESLint. Fases 3/4 estendem com duplicação,
+      # tamanho de arquivo e cobertura (esta última lida do coverage mergeado).
+      - name: Ratchet check
+        run: node scripts/quality/check-quality-ratchet.mjs --summary .artifacts/quality-ratchet.md
+      - name: Append summary
+        if: always()
+        run: cat .artifacts/quality-ratchet.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload ratchet report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-ratchet
+          path: .artifacts/quality-ratchet.md
+          if-no-files-found: warn
 
   docs-sync-strict:
     name: Docs Sync (Strict)

@@ -1,0 +1,6 @@
+{
+  "_comment": "Catraca de qualidade. 'down' = nao pode aumentar; 'up' = nao pode cair. Atualize via 'npm run quality:ratchet -- --update' (somente quando melhora). Cada valor e um numero REAL medido, nunca um chute. Cobertura entra na Fase 4 a partir de um run de cobertura mergeada no CI.",
+  "metrics": {
+    "eslintWarnings": { "value": 3482, "direction": "down" }
+  }
+}

@@ -202,3 +202,5 @@ pr_reviews*.json
 
 # internal setup prompts with personal credentials — never commit
 CODEX-SETUP-PROMPT.md
+# Quality ratchet — métricas efêmeras (baseline é commitado, métricas não)
+quality-metrics.json
