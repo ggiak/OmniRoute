@@ -14,6 +14,10 @@ const BASELINE = path.resolve(getArg("--baseline", path.join(cwd, "quality-basel
 const METRICS = path.resolve(getArg("--metrics", path.join(cwd, "quality-metrics.json")));
 const SUMMARY = getArg("--summary", null);
 const UPDATE = process.argv.includes("--update");
+// --allow-missing: pula métricas do baseline ausentes do metrics (em vez de falhar).
+// Uso local: cobertura só existe no CI; localmente quality:gate roda com este flag.
+// No CI o job quality-gate roda SEM o flag (estrito — baixa o coverage mergeado antes).
+const ALLOW_MISSING = process.argv.includes("--allow-missing");
 const EPS = 0.01;
 
 function load(p) {
@@ -35,8 +39,12 @@ for (const [key, spec] of Object.entries(baseline.metrics)) {
   const base = spec.value;
   const dir = spec.direction; // "down" = menor-é-melhor | "up" = maior-é-melhor
   if (current === undefined) {
-    failures.push(`métrica "${key}" ausente em ${path.basename(METRICS)}`);
-    rows.push([key, base, "—", "MISSING"]);
+    if (ALLOW_MISSING) {
+      rows.push([key, base, "—", "SKIP (ausente)"]);
+    } else {
+      failures.push(`métrica "${key}" ausente em ${path.basename(METRICS)}`);
+      rows.push([key, base, "—", "MISSING"]);
+    }
     continue;
   }
   let status = "ok";

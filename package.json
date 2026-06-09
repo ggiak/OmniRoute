@@ -121,7 +121,7 @@
     "check:test-masking": "node scripts/check/check-test-masking.mjs",
     "quality:collect": "node scripts/quality/collect-metrics.mjs",
     "quality:ratchet": "node scripts/quality/check-quality-ratchet.mjs",
-    "quality:gate": "npm run quality:collect && npm run quality:ratchet",
+    "quality:gate": "npm run quality:collect && npm run quality:ratchet -- --allow-missing",
     "audit:deps": "npm audit --audit-level=critical && (npm audit --audit-level=high || echo '::warning::high-severity advisories present (non-blocking)') && npm run audit:electron",
     "audit:electron": "npm --prefix electron audit --audit-level=moderate",
     "typecheck:core": "tsc --pretty false -p tsconfig.typecheck-core.json",

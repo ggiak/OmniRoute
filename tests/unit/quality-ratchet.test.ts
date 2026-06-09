@@ -58,3 +58,13 @@ test("fails when a baseline metric is missing from collected metrics", () => {
   const b = { metrics: { eslintWarnings: { value: 100, direction: "down" } } };
   assert.equal(run(b, {}).code, 1);
 });
+
+test("--allow-missing skips absent metrics instead of failing", () => {
+  const b = {
+    metrics: {
+      eslintWarnings: { value: 100, direction: "down" },
+      "coverage.lines": { value: 80, direction: "up" },
+    },
+  };
+  assert.equal(run(b, { eslintWarnings: 100 }, ["--allow-missing"]).code, 0);
+});
